@@ -1,0 +1,8 @@
+bin*
+build*
+doc*
+etc/collection.spec
+etc/terrier.properties
+lib/*
+share/*
+var/*
