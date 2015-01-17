@@ -785,8 +785,17 @@ public class TRECCounting {
 			if (query == null || query.trim().length() == 0) {
 				logger.warn("Ignoring empty query " + qid);
 			}
-			SearchRequest srq = processQuery(qid, query, c, c_set);
-			logger.info(srq.getResultSet().getExactResultSize() + " documents containing term(s) \"" + query + "\"");
+
+			int resultSize = 0;
+
+			try {
+				SearchRequest srq = processQuery(qid, query, c, c_set);
+				resultSize = srq.getResultSet().getExactResultSize();
+			} catch (NullPointerException e) {
+				// no result found for the query!
+			}
+
+			logger.info("query " + qid + " : " + resultSize + " documents containing term(s) \"" + query + "\"");
 
 
 			long processingEnd = System.currentTimeMillis();
