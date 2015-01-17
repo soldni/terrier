@@ -639,8 +639,6 @@ public class TRECCounting {
 		// force phrase search as you're counting
 		query = "\"" + query + "\"";
 
-		if (logger.isInfoEnabled())
-			logger.info(queryId + " : " + query);
 		SearchRequest srq = queryingManager.newSearchRequest(queryId, query);
 		initSearchRequestModification(queryId, srq);
 		String c = null;
@@ -795,7 +793,7 @@ public class TRECCounting {
 				// no result found for the query!
 			}
 
-			logger.info("query " + qid + " : " + resultSize + " documents containing term(s) \"" + query + "\"");
+			logger.info("Query " + qid + " : " + resultSize + " documents containing term(s) \"" + query + "\"");
 
 
 			long processingEnd = System.currentTimeMillis();
