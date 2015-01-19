@@ -1,10 +1,10 @@
 /*
- * Terrier - Terabyte Retriever
- * Webpage: http://terrier.org
+ * Terrier - Terabyte Retriever 
+ * Webpage: http://terrier.org 
  * Contact: terrier{a.}dcs.gla.ac.uk
  * University of Glasgow - School of Computing Science
  * http://www.gla.ac.uk/
- *
+ * 
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
@@ -21,7 +21,7 @@
  * All Rights Reserved.
  *
  * Contributor(s):
- *   Ben He <ben{a.}dcs.gla.ac.uk> (original author)
+ *   Ben He <ben{a.}dcs.gla.ac.uk> (original author) 
  *   Craig Macdonald <craigm{a.}dcs.gla.ac.uk>
  */
 package org.terrier.applications.batchquerying;
@@ -40,7 +40,7 @@ import org.terrier.utility.ArrayUtils;
 import org.terrier.utility.Files;
 import org.terrier.utility.TagSet;
 /**
- * This class is used for reading the queries
+ * This class is used for reading the queries 
  * from TREC topic files.
  * <p><b>Properties:</b></p>
  * <ul>
@@ -55,7 +55,7 @@ public class TRECQuery implements QuerySource {
 	protected static final Logger logger = Logger.getLogger(TRECQuery.class);
 
 	/** Value of <tt>trecquery.ignore.desc.narr.name.tokens</tt> - should the token DESCRIPTION and NARRATIVE in the desc and narr fields be ignored? Defaluts to true? */
-	protected static final boolean IGNORE_DESC_NARR_NAME_TOKENS =
+	protected static final boolean IGNORE_DESC_NARR_NAME_TOKENS = 
 		Boolean.parseBoolean(ApplicationSetup.getProperty("trecquery.ignore.desc.narr.name.tokens","true"));
 
 	/** Encoding to be used to open all files. */
@@ -66,7 +66,7 @@ public class TRECQuery implements QuerySource {
 
 	/** The queries in the topic files.*/
 	protected String[] queries;
-
+	
 	/** The query identifiers in the topic files.*/
 	protected String[] query_ids;
 	/** The index of the queries.*/
@@ -74,9 +74,9 @@ public class TRECQuery implements QuerySource {
 	/**
 	 * Extracts and stores all the queries from query files.
 	 * @param queryfilenames String the name of files containing topics.
-	 * @param vecStringQueries Vector a vector containing the
+	 * @param vecStringQueries Vector a vector containing the 
 	 *		queries as strings.
-	 * @param vecStringIds Vector a vector containing the query
+	 * @param vecStringIds Vector a vector containing the query 
 	 *		identifiers as strings.
 	 * @return boolean true if some queries were successfully extracted.
 	 */
@@ -92,9 +92,9 @@ public class TRECQuery implements QuerySource {
 	/**
 	 * Extracts and stores all the queries from a query file.
 	 * @param queryfilename String the name of a file containing topics.
-	 * @param vecStringQueries Vector a vector containing the
+	 * @param vecStringQueries Vector a vector containing the 
 	 *		queries as strings.
-	 * @param vecStringIds Vector a vector containing the query
+	 * @param vecStringIds Vector a vector containing the query 
 	 *		identifiers as strings.
 	 * @return boolean true if some queries were successfully extracted.
 	 */
@@ -124,7 +124,7 @@ public class TRECQuery implements QuerySource {
 								|| token.length() == 0
 								|| queryTokenizer.inTagToSkip())
 							continue;
-
+						
 						if (queryTokenizer.inDocnoTag()) {
 							//The tokenizer is constructed from the trimmed version of the contents
 							//of the query number tag, ignoring the token Number:
@@ -137,10 +137,10 @@ public class TRECQuery implements QuerySource {
 									docnoToken = tok;
 							}
 						} else if (queryTokenizer.inTagToProcess()) {
-							// Removed the code that checks if "description" and
-							// "narrative" appear in "desc" and "narr", respective.
-							// THIS WILL HURT THE RETRIEVAL PERFORMANCE. Therefore,
-							// it is recommended to add these words in the stopword
+							// Removed the code that checks if "description" and 
+							// "narrative" appear in "desc" and "narr", respective. 
+							// THIS WILL HURT THE RETRIEVAL PERFORMANCE. Therefore, 
+							// it is recommended to add these words in the stopword 
 							// list.
 							if (!seenDescriptionToken && queryTokenizer
 							  .currentTag()
@@ -151,10 +151,10 @@ public class TRECQuery implements QuerySource {
 							   .currentTag()
 							   .equalsIgnoreCase("NARR")
 							   && token.equalsIgnoreCase("NARRATIVE"))
-							   continue;
+							   continue;	
 							query.append(token);
 							query.append(' ');
-
+							
 						}
 					}
 					queryTokenizer.nextDocument();
@@ -164,7 +164,7 @@ public class TRECQuery implements QuerySource {
 					if (docnoToken == null)
 						throw new IOException("No id tag found for this query");
 					vecStringIds.add(docnoToken);
-
+					
 					gotSome = true;
 				}
 				//after processing each query file, close the BufferedReader
@@ -176,9 +176,9 @@ public class TRECQuery implements QuerySource {
 		}
 		return gotSome;
 	}
-
-
-	/**
+	
+	
+	/** 
 	 * Constructs an instance of TRECQuery,
 	 * that reads and stores all the queries from
 	 * the files defined in the trec.topics property. */
@@ -195,31 +195,31 @@ public class TRECQuery implements QuerySource {
 					vecStringFiles.add(files[i]);
 				}
 			}
-
+						
 			this.topicFiles = vecStringQueries.toArray(new String[0]);
 			this.queries = vecStringQueries.toArray(new String[0]);
-			this.query_ids = vecStringQueryIDs.toArray(new String[0]);
+			this.query_ids = vecStringQueryIDs.toArray(new String[0]);	
 			this.index = 0;
 		} catch (Exception ioe) {
 			logger.error("Problem getting trec.topics property:", ioe);
 			return;
 		}
-
+		
 	}
-
-	/**
+	
+	/** 
 	 * Constructs an instance of TRECQuery that
-	 * reads and stores all the queries from a
+	 * reads and stores all the queries from a 
 	 * the specified query file.
 	 * @param queryfile File the file containing the queries.
 	 */
 	public TRECQuery(File queryfile){
 		this(queryfile.getName());
 	}
-
-	/**
+	
+	/** 
 	 * Constructs an instance of TRECQuery that
-	 * reads and stores all the queries from
+	 * reads and stores all the queries from 
 	 * the specified query files.
 	 * @param queryfiles File the file containing the queries.
 	 */
@@ -236,39 +236,39 @@ public class TRECQuery implements QuerySource {
 				+ " Check you have the correct topic files specified, and that TrecQueryTags properties are correct.");
 
 		this.queries = vecStringQueries.toArray(new String[0]);
-		this.query_ids = vecStringQueryIDs.toArray(new String[0]);
+		this.query_ids = vecStringQueryIDs.toArray(new String[0]);	
 		this.index = 0;
 	}
-
-	/**
+	
+	/** 
 	 * Constructs an instance of TRECQuery that
-	 * reads and stores all the queries from a
+	 * reads and stores all the queries from a 
 	 * file with the specified filename.
-	 * @param queryfilename String the name of the file containing
+	 * @param queryfilename String the name of the file containing 
 	 *		all the queries.
-	 */
+	 */	
 	public TRECQuery(String queryfilename){
 		Vector<String> vecStringQueries = new Vector<String>();
 		Vector<String> vecStringQueryIDs = new Vector<String>();
 		if (this.extractQuery(queryfilename, vecStringQueries, vecStringQueryIDs))
 			this.topicFiles = new String[]{queryfilename};
-
+		
 		if (topicFiles == null)
 			logger.error("Topic files were specified, but non could be parsed correctly to obtain any topics."
 				+ " Check you have the correct topic files specified, and that TrecQueryTags properties are correct.");
-
+		
 		this.queries = vecStringQueries.toArray(new String[0]);
-		this.query_ids = vecStringQueryIDs.toArray(new String[0]);
+		this.query_ids = vecStringQueryIDs.toArray(new String[0]);	
 		this.index = 0;
 	}
-
-	/**
+	
+	/** 
 	 * Constructs an instance of TRECQuery that
-	 * reads and stores all the queries from
+	 * reads and stores all the queries from 
 	 * files with the specified filename.
-	 * @param queryfilenames String[] the name of the files containing
+	 * @param queryfilenames String[] the name of the files containing 
 	 *		all the queries.
-	 */
+	 */	
 	public TRECQuery(String[] queryfilenames){
 		Vector<String> vecStringQueries = new Vector<String>();
 		Vector<String> vecStringQueryIDs = new Vector<String>();
@@ -279,16 +279,16 @@ public class TRECQuery implements QuerySource {
 				+ " Check you have the correct topic files specified, and that TrecQueryTags properties are correct.");
 
 		this.queries = vecStringQueries.toArray(new String[0]);
-		this.query_ids = vecStringQueryIDs.toArray(new String[0]);
+		this.query_ids = vecStringQueryIDs.toArray(new String[0]);	
 		this.index = 0;
 	}
-
-
-//	/**
+	
+	
+//	/** 
 //	 * @deprecated As of Terrier 3.5
-//	 * Extracts and stores all the queries from
+//	 * Extracts and stores all the queries from 
 //	 * the topic files, specified in the file
-//	 * with default name <tt>trec.topics.list</tt>.
+//	 * with default name <tt>trec.topics.list</tt>. 
 //	 */
 //	protected void extractQuery() {
 //		try {
@@ -301,7 +301,7 @@ public class TRECQuery implements QuerySource {
 //			int fileCount = 0;
 //			while ((queryFilename = addressQueryFile.readLine()) != null) {
 //				if (queryFilename.startsWith("#") || queryFilename.equals(""))
-//					continue;
+//					continue;	
 //				logger.info("Extracting queries from "+queryFilename);
 //				fileCount++;
 //				boolean rtr = extractQuery(queryFilename, vecStringQueries, vecStringQueryIDs);
@@ -326,36 +326,36 @@ public class TRECQuery implements QuerySource {
 //			logger.error("Input/Output exception while performing the matching.", ioe);
 //		}
 //	}
-
-	/**
+	
+	/** 
 	 * Returns the index of the last obtained query.
-	 * @return int the index of the last obtained query.
+	 * @return int the index of the last obtained query. 
 	 */
 	public int getIndexOfCurrentQuery() {
 		return index - 1;
 	}
-
-	/**
+	
+	/** 
 	 * Returns the number of the queries read from the
-	 * processed topic files.
-	 * @return int the number of topics contained in the
+	 * processed topic files. 
+	 * @return int the number of topics contained in the 
 	 *		 processed topic files.
 	 */
 	public int getNumberOfQueries() {
 		return queries.length;
 	}
-
+	
 	/** Returns the filenames of the topic files from which the queries were extracted */
 	public String[] getInfo()
 	{
 		return this.topicFiles;
 	}
-
+	
 	/** @deprecated */
 	public String[] getTopicFilenames() {
 		return getInfo();
 	}
-
+	
 	/**
 	* Return the query for the given query number.
 	* @return String the string representing the query.
@@ -367,7 +367,7 @@ public class TRECQuery implements QuerySource {
 				return queries[i];
 		return null;
 	}
-	/**
+	/** 
 	 * Test if there are more queries to process.
 	 * @return boolean true if there are more queries
 	 *		 to process, otherwise returns false.
@@ -376,8 +376,8 @@ public class TRECQuery implements QuerySource {
 	public boolean hasMoreQueries() {
 		return hasNext();
 	}
-	/**
-	 * {@inheritDoc}
+	/** 
+	 * {@inheritDoc} 
 	 */
 	public boolean hasNext()
 	{
@@ -385,17 +385,17 @@ public class TRECQuery implements QuerySource {
 			return false;
 		return true;
 	}
-
-	/**
-	 * Returns a query.
+	
+	/** 
+	 * Returns a query. 
 	 * @return String the next query.
 	 * @deprecated
 	 */
 	public String nextQuery() {
 		return next();
 	}
-	/**
-	 * {@inheritDoc}
+	/** 
+	 * {@inheritDoc} 
 	 */
 	public String next()
 	{
@@ -403,20 +403,20 @@ public class TRECQuery implements QuerySource {
 			return null;
 		return queries[index++];
 	}
-
+	
 	/** {@inheritDoc} */
 	public String getQueryId() {
 		return query_ids[index == 0 ? 0 : index-1];
 	}
 
-	/** Returns the query ids
+	/** Returns the query ids 
 	  * @return String array containing the query ids.
 	  * @since 2.2 */
 	public String[] getQueryIds()
 	{
 		return query_ids;
-	}
-
+	}	
+	
 	/**
 	* Returns the queries in an array of strings
 	* @return String[] an array containing the strings that
@@ -425,14 +425,14 @@ public class TRECQuery implements QuerySource {
 	public String[] toArray() {
 		return (String[]) queries.clone();
 	}
-
+	
 	/** {@inheritDoc} */
 	public void reset() {
 		this.index = 0;
 	}
 
-	/**
-	 * {@inheritDoc}
+	/** 
+	 * {@inheritDoc} 
 	 */
 	public void remove() {
 		throw new UnsupportedOperationException();

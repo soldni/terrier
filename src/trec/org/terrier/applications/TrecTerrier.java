@@ -1,11 +1,11 @@
 package org.terrier.applications;
 /*
- * Terrier - Terabyte Retriever
- * Webpage: http://terrier.org
+ * Terrier - Terabyte Retriever 
+ * Webpage: http://terrier.org 
  * Contact: terrier{a.}dcs.gla.ac.uk
  * University of Glasgow - School of Computing Science
  * http://www.gla.ac.uk/
- *
+ * 
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.1 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
@@ -22,14 +22,13 @@ package org.terrier.applications;
  * All Rights Reserved.
  *
  * Contributor(s):
- *   Vassilis Plachouras <vassilis{a.}dcs.gla.ac.uk> (original author)
+ *   Vassilis Plachouras <vassilis{a.}dcs.gla.ac.uk> (original author) 
  */
 import java.io.File;
 
 import org.apache.log4j.Logger;
 
 import org.terrier.applications.batchquerying.TRECQuerying;
-import org.terrier.applications.batchquerying.TRECCounting;
 import org.terrier.structures.outputformat.TRECDocidOutputFormat;
 import org.terrier.evaluation.AdhocEvaluation;
 import org.terrier.evaluation.Evaluation;
@@ -41,17 +40,17 @@ import org.terrier.structures.PostingIndexInputStream;
 import org.terrier.structures.indexing.singlepass.Inverted2DirectIndexBuilder;
 import org.terrier.structures.indexing.singlepass.hadoop.Inv2DirectMultiReduce;
 import org.terrier.utility.ApplicationSetup;
-/*
- * The text-based application that handles querying
+/**
+ * The text-based application that handles querying 
  * with Terrier, for TREC-like test collections.
  * <code>
- TrecTerrier, indexing TREC collections with Terrier.<br>
+TrecTerrier, indexing TREC collections with Terrier.<br>
 usage: java TrecTerrier [flags in any order]<br>
 <br>
   -h --help		print this message<br>
   -V --version	 print version information<br>
   -i --index	   index a collection<br>
-  -id --inverted2direct		generate a direct index for an existing index
+  -id --inverted2direct		generate a direct index for an existing index 
   -r --retrieve	retrieve from an indexed collection<br>
   -e --evaluate	evaluates the results in the directory<br>
 				   var/results with the specified qrels file<br>
@@ -82,7 +81,7 @@ corresponding data structure are shown in the standard output.<br>
   --printdirect	prints the contents of the direct file<br>
   --printstats	 prints statistics about the indexed collection<br>
 </code>
- *
+ * 
  * @author Vassilis Plachouras
  */
 public class TrecTerrier {
@@ -92,51 +91,45 @@ public class TrecTerrier {
 	protected String unknownOption;
 	/** The file to evaluation, if any */
 	protected String evaluationFilename = null;
-
+	
 	/** Specifies whether to apply query expansion*/
 	protected boolean queryexpand;
-
+	
 	/** Specifies whether a help message is printed*/
 	protected boolean printHelp;
 	/** Specified whether a version message is printed*/
 	protected boolean printVersion;
-
+	
 	/** Specifies whether to index a collection*/
 	protected boolean indexing;
-
+	
 	/**
-	 * Specifies whether to build the inverted file
-	 * from scrach, sigle pass method
+	 * Specifies whether to build the inverted file 
+	 * from scrach, sigle pass method	
 	 */
 	protected boolean singlePass = false;
 
 	/** use Hadoop indexing */
 	protected boolean hadoop = false;
-
+	
 	/** Specifies whether to retrieve from an indexed collection*/
 	protected boolean retrieving;
-
-	/**
-	 * Specifies whether to return the # of documents matching
-	 * the query from an indexed colleciton
-	 */
-	protected boolean counting;		//ls
-
+	
 	/** Specifies whether to print the document index*/
 	protected boolean printdocid;
-
+	
 	/** Specifies whether to print the lexicon*/
 	protected boolean printlexicon;
-
+	
 	/** Specifies whether to print the inverted file*/
 	protected boolean printinverted;
-
+	
 	/** Specifies whether to print the direct file*/
 	protected boolean printdirect;
-
+	
 	/** Specifies whether to print the statistics file*/
 	protected boolean printstats;
-
+	
 	/** whether to print the meta index */
 	protected boolean printmeta;
 
@@ -152,38 +145,38 @@ public class TrecTerrier {
 	protected String evaluation_type = "adhoc";
 
 
-	/**
+	/** 
 	 * Specifies whether to build the inverted file
 	 * from an already created direct file.
 	 */
 	protected boolean inverted;
-
+	
 	/**
 	 * Specifies whether to build the direct file only.
 	 */
 	protected boolean direct;
-
-	/**
-	 * The value of the term frequency
+	
+	/** 
+	 * The value of the term frequency 
 	 * normalisation parameter.
 	 */
 	protected double c;
-
+	
 	/**
 	 * Specifies whether to perform trec_eval like evaluation.
 	 */
 	protected boolean evaluation;
-
+	
 	/**
-	 * Indicates whether there is a specified
+	 * Indicates whether there is a specified 
 	 * value for the term frequency normalisation
 	 * parameter.
 	 */
 	protected boolean isParameterValueSpecified;
-
-
+	
+	
 	protected boolean inverted2direct;
-
+	
 	protected boolean docids = false;
 
 	/**
@@ -194,7 +187,7 @@ public class TrecTerrier {
 		System.out.println("TrecTerrier, indexing TREC collections with Terrier. Version "+ApplicationSetup.TERRIER_VERSION);
 		//System.out.println("Built on ");
 	}
-
+	
 	/**
 	 * Prints a help message that explains the
 	 * possible options.
@@ -208,7 +201,6 @@ public class TrecTerrier {
 		System.out.println("  -i --index	   index a collection");
 		System.out.println("  -id --inverted2direct		generate a direct index for an existing index");
 		System.out.println("  -r --retrieve	retrieve from an indexed collection");
-		System.out.println("  --count returns a count of the documents matching the query");		//ls
 		System.out.println("  -e --evaluate	evaluates the results in the directory");
 		System.out.println("				   var/results with the specified qrels file");
 		System.out.println("				   in the file etc/trec.qrels");
@@ -241,7 +233,7 @@ public class TrecTerrier {
 		System.out.println("  --printstats	 prints statistics about the indexed collection");
 		System.out.println("  --printmeta	 prints the contents of the meta structure");
 	}
-
+	
 	/**
 	 * The main method that starts the application
 	 * @param args the command line arguments
@@ -259,21 +251,21 @@ public class TrecTerrier {
 			System.err.println(oome);
 			oome.printStackTrace();
 		}
-
+		
 	}
-
+	
 	/**
 	 * Processes the command line arguments and
 	 * sets the corresponding properties accordingly.
 	 * @param args the command line arguments.
-	 * @return int zero if the command line arguments are
+	 * @return int zero if the command line arguments are 
 	 *		 processed successfully, otherwise it returns
 	 *		 an error code.
 	 */
 	protected int processOptions(String[] args) {
 		if (args.length == 0)
 			return ERROR_NO_ARGUMENTS;
-
+		
 		int pos = 0;
 		boolean applicationSetupUpdated = false;
 		while (pos < args.length) {
@@ -290,20 +282,18 @@ public class TrecTerrier {
 			else if (args[pos].equals("-i") || args[pos].equals("--index"))
 				indexing = true;
 			else if (args[pos].equals("-j") || args[pos].equals("--ifile"))
-				singlePass = true;
+				singlePass = true;					
 			else if (args[pos].equals("-H") || args[pos].equals("--hadoop"))
 				hadoop = true;
 			else if (args[pos].equals("-r") || args[pos].equals("--retrieve"))
 				retrieving = true;
-			else if (args[pos].equals("-C") || args[pos].equals("--count"))		//ls
-				counting = true;												//ls
 			else if (args[pos].equals("-v") || args[pos].equals("--inverted"))
 				inverted = true;
 			else if (args[pos].equals("-id") || args[pos].equals("--inverted2direct"))
 				inverted2direct = true;
 			else if (args[pos].equals("-d") || args[pos].equals("--direct"))
 				direct = true;
-			else if (args[pos].equals("-q") || args[pos].equals("--queryexpand"))
+			else if (args[pos].equals("-q") || args[pos].equals("--queryexpand")) 
 				queryexpand = true;
 			else if (args[pos].equals("--printdocid"))
 				printdocid = true;
@@ -333,7 +323,7 @@ public class TrecTerrier {
 					if (pos+1<args.length) { //there is another argument
 						pos++;
 						c = Double.parseDouble(args[pos]);
-					} else
+					} else 
 						return ERROR_NO_C_VALUE;
 				} else { //the value is in the same argument
 					c = Double.parseDouble(args[pos].substring(2));
@@ -348,32 +338,32 @@ public class TrecTerrier {
 			}
 			pos++;
 		}
-
+		
 		if (applicationSetupUpdated)
 			ApplicationSetup.loadCommonProperties();
-
-
-		if (isParameterValueSpecified && !retrieving)
+		
+		
+		if (isParameterValueSpecified && !retrieving) 
 			return ERROR_GIVEN_C_NOT_RETRIEVING;
-
+		
 		if ((retrieving || queryexpand || c!=0) && (direct || inverted || indexing))
-			return ERROR_CONFLICTING_ARGUMENTS;
+			return ERROR_CONFLICTING_ARGUMENTS;		
 
 		if (hadoop && ! indexing)
 			return ERROR_HADOOP_NOT_RETRIEVAL;
-
-		if (direct && !indexing)
+		
+		if (direct && !indexing) 
 			return ERROR_DIRECT_NOT_INDEXING;
-
-		if (inverted && !indexing)
+		
+		if (inverted && !indexing) 
 			return ERROR_INVERTED_NOT_INDEXING;
-
+		
 		if (queryexpand && !retrieving)
 			return ERROR_EXPAND_NOT_RETRIEVE;
-
+		
 		return ARGUMENTS_OK;
 	}
-
+	
 	/**
 	 * Calls the required classes from Terrier.
 	 */
@@ -382,20 +372,20 @@ public class TrecTerrier {
 			version();
 			return;
 		}
-		if (printHelp) {
+		if (printHelp) { 
 			usage();
 			return;
 		}
 
 		long startTime = System.currentTimeMillis();
 		if (indexing) {
-			if (hadoop)
+			if (hadoop) 
 			{
 				if (inverted2direct) {
 					String[] builderCommand = {"1", "--finish"};
 					Inv2DirectMultiReduce.main(builderCommand);
 				}
-
+				
 				try{
 					HadoopIndexing.main(new String[]{});
 				} catch (Exception e) {
@@ -408,10 +398,10 @@ public class TrecTerrier {
 			{
 				TRECIndexing trecIndexing = new TRECIndexing();
 				if(singlePass)
-					trecIndexing.createSinglePass();
+					trecIndexing.createSinglePass();	
 				else if (direct)
 					trecIndexing.createDirectFile();
-				else if (inverted)
+				else if (inverted) 
 					trecIndexing.createInvertedFile();
 				else { //if none of the options is specified, build both structures
 					trecIndexing.index();
@@ -424,26 +414,12 @@ public class TrecTerrier {
 			TRECQuerying trecQuerying = new TRECQuerying(queryexpand);
 			trecQuerying.processQueries(c, isParameterValueSpecified);
 			trecQuerying.close();
-		} else if (counting) {
-
-			Index.setIndexLoadingProfileAsRetrieval(false);
-			Index i = Index.createIndex();
-			String numdoc = String.valueOf(i.getCollectionStatistics().getNumberOfDocuments());
-			ApplicationSetup.setProperty("matching.retrieved_set_size", numdoc);
-			Index.setIndexLoadingProfileAsRetrieval(true);
-
-			//if no value is given, then we use a default value
-			if (docids)
-				ApplicationSetup.setProperty("trec.querying.outputformat", TRECDocidOutputFormat.class.getName());
-			TRECCounting trecCounting = new TRECCounting(queryexpand);
-			trecCounting.processQueries(c, isParameterValueSpecified);
-			trecCounting.close();
 		} else if (printdocid) {
 			Index.setIndexLoadingProfileAsRetrieval(false);
 			Index i = Index.createIndex();
 			if (i == null)
 			{
-				logger.error("No such index : "+ Index.getLastIndexLoadError());
+				logger.error("No such index : "+ Index.getLastIndexLoadError());				
 			}
 			IndexUtil.printDocumentIndex(i, "document");
 			i.close();
@@ -452,7 +428,7 @@ public class TrecTerrier {
 			Index i = Index.createIndex();
 			if (i == null)
 			{
-				logger.error("No such index : "+ Index.getLastIndexLoadError());
+				logger.error("No such index : "+ Index.getLastIndexLoadError());				
 			}
 			IndexUtil.printMetaIndex(i, "meta");
 			i.close();
@@ -461,7 +437,7 @@ public class TrecTerrier {
 			Index i = Index.createIndex();
 			if (i == null)
 			{
-				logger.error("No such index : "+ Index.getLastIndexLoadError());
+				logger.error("No such index : "+ Index.getLastIndexLoadError());				
 			}
 			if (! i.hasIndexStructureInputStream("lexicon"))
 			{
@@ -473,7 +449,7 @@ public class TrecTerrier {
 			Index i = Index.createIndex();
 			if (i == null)
 			{
-				logger.error("No such index : "+ Index.getLastIndexLoadError());
+				logger.error("No such index : "+ Index.getLastIndexLoadError());				
 			}
 			if (! i.hasIndexStructureInputStream("direct"))
 			{
@@ -491,7 +467,7 @@ public class TrecTerrier {
 			Index i = Index.createIndex();
 			if (i == null)
 			{
-				logger.error("No such index : "+ Index.getLastIndexLoadError());
+				logger.error("No such index : "+ Index.getLastIndexLoadError());				
 			}
 			if (i.hasIndexStructureInputStream("inverted"))
 			{
@@ -509,7 +485,7 @@ public class TrecTerrier {
 			Index i = Index.createIndex();
 			if (i == null)
 			{
-				logger.error("No such index : "+ Index.getLastIndexLoadError());
+				logger.error("No such index : "+ Index.getLastIndexLoadError());				
 			}
 			else if(logger.isInfoEnabled()){
 				logger.info("Collection statistics:");
@@ -534,7 +510,7 @@ public class TrecTerrier {
 			}
 			else
 			{
-				nomefile =new String[]{evaluationFilename};
+				nomefile =new String[]{evaluationFilename}; 
 			}
 			for (int i = 0; i < nomefile.length; i++) {
 				if (nomefile[i].endsWith(".res")) {
@@ -557,7 +533,7 @@ public class TrecTerrier {
 			String[] builderCommand = {};
 			Inverted2DirectIndexBuilder.main(builderCommand);
 		}
-
+		
 		long endTime = System.currentTimeMillis();
 		System.err.println("Time elapsed: " + (endTime-startTime)/1000.0d + " seconds.");
 	}
@@ -567,14 +543,14 @@ public class TrecTerrier {
 	 */
 	public void applyOptions(int status) throws Exception {
 		switch(status) {
-			case ERROR_NO_ARGUMENTS :
+			case ERROR_NO_ARGUMENTS : 
 				usage();
 				break;
 			case ERROR_NO_C_VALUE :
 				System.err.println("A value for the term frequency normalisation parameter");
 				System.err.println("is required. Please specify it with the option '-c value'");
 				break;
-			case ERROR_CONFLICTING_ARGUMENTS :
+			case ERROR_CONFLICTING_ARGUMENTS : 
 				System.err.println("There is a conclict between the specified options. For example,");
 				System.err.println("option '-c' is used only in conjuction with option '-r'.");
 				System.err.println("In addition, options '-v' or '-d' are used only in conjuction");
@@ -583,36 +559,36 @@ public class TrecTerrier {
 			case ERROR_PRINT_DOCINDEX_FILE_NOT_EXISTS :
 				System.err.println("The specified document index file does not exist.");
 				break;
-			case ERROR_PRINT_DIRECT_FILE_NOT_EXISTS :
+			case ERROR_PRINT_DIRECT_FILE_NOT_EXISTS : 
 				System.err.println("The specified direct index does not exist.");
 				break;
-			case ERROR_UNKNOWN_OPTION :
+			case ERROR_UNKNOWN_OPTION : 
 				System.err.println("The option '" +unknownOption+"' is not recognised");
 				break;
-			case ERROR_DIRECT_NOT_INDEXING :
+			case ERROR_DIRECT_NOT_INDEXING : 
 				System.err.println("The option '-d' or '--direct' can be used only while indexing with option '-i'.");
 				break;
-			case ERROR_INVERTED_NOT_INDEXING :
+			case ERROR_INVERTED_NOT_INDEXING : 
 				System.err.println("The option '-i' or '--inverted' can be used only while indexing with option '-i'.");
 				break;
-			case ERROR_EXPAND_NOT_RETRIEVE :
+			case ERROR_EXPAND_NOT_RETRIEVE : 
 				System.err.println("The option '-q' or '--queryexpand' can be used only while retrieving with option '-r'.");
 				break;
-			case ERROR_GIVEN_C_NOT_RETRIEVING :
+			case ERROR_GIVEN_C_NOT_RETRIEVING : 
 				System.err.println("A value for the parameter c can be specified only while retrieving with option '-r'.");
 				break;
-			case ERROR_HADOOP_NOT_RETRIEVAL :
+			case ERROR_HADOOP_NOT_RETRIEVAL : 
 				System.err.println("Hadoop mode '-H' can only be used for indexing");
 				break;
 			case ERROR_HADOOP_ONLY_INDEX :
 				System.err.println("Hadoop mode '-H' can only be used for straightforward indexing");
 				break;
-			case ARGUMENTS_OK :
+			case ARGUMENTS_OK : 
 			default :
-				run();
+				run();			
 		}
 	}
-
+	
 	protected static final int ARGUMENTS_OK = 0;
 	protected static final int ERROR_NO_ARGUMENTS = 1;
 	protected static final int ERROR_NO_C_VALUE = 2;

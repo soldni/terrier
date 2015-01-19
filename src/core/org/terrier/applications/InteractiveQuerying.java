@@ -33,6 +33,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
 
 import org.terrier.matching.ResultSet;
 import org.terrier.querying.Manager;
@@ -54,7 +55,7 @@ import org.terrier.utility.ApplicationSetup;
 public class InteractiveQuerying {
 	/** The logger used */
 	protected static final Logger logger = Logger.getLogger(InteractiveQuerying.class);
-	
+
 	/** Change to lowercase? */
 	protected final static boolean lowercase = Boolean.parseBoolean(ApplicationSetup.getProperty("lowercase", "true"));
 	/** display user prompts */
@@ -73,16 +74,19 @@ public class InteractiveQuerying {
 	protected String mModel = ApplicationSetup.getProperty("interactive.matching", "Matching");
 	/** The data structures used.*/
 	protected Index index;
-	/** The maximum number of presented results. */
-	protected static int RESULTS_LENGTH = 
-		Integer.parseInt(ApplicationSetup.getProperty("interactive.output.format.length", "1000"));
-	
+
+	/** Set true to perform retrieving */
+	protected static boolean retrieving = false;
+
+	/** Set true to perform counting */
+	protected static boolean counting = false;
+
 	protected String[] metaKeys = ApplicationSetup.getProperty("interactive.output.meta.keys", "docno").split("\\s*,\\s*");
-	
+
 	/** A default constructor initialises the index, and the Manager. */
 	public InteractiveQuerying() {
 		loadIndex();
-		createManager();		
+		createManager();
 	}
 
 	/**
@@ -99,10 +103,10 @@ public class InteractiveQuerying {
 			.getConstructor(new Class[]{Index.class})
 			.newInstance(new Object[]{index}));
 		} catch (Exception e) {
-			logger.error("Problem loading Manager ("+managerName+"): ",e);	
+			logger.error("Problem loading Manager ("+managerName+"): ",e);
 		}
 	}
-	
+
 	/**
 	* Loads index(s) from disk.
 	*
@@ -127,7 +131,7 @@ public class InteractiveQuerying {
 		} catch (IOException ioe) {
 			logger.warn("Problem closing index", ioe);
 		}
-		
+
 	}
 	/**
 	 * According to the given parameters, it sets up the correct matching class.
@@ -150,8 +154,36 @@ public class InteractiveQuerying {
 			logger.error("Problem displaying results", ioe);
 		}
 	}
+
+	public void countQuery(String queryId, String query, double cParameter) {
+		SearchRequest srq = queryingManager.newSearchRequest(queryId, query);
+
+		Index.setIndexLoadingProfileAsRetrieval(false);
+		Index i = Index.createIndex();
+		String numdoc = String.valueOf(i.getCollectionStatistics().getNumberOfDocuments());
+		ApplicationSetup.setProperty("matching.retrieved_set_size", numdoc);
+		Index.setIndexLoadingProfileAsRetrieval(true);
+
+		srq.setControl("c", Double.toString(cParameter));
+		srq.addMatchingModel(mModel, wModel);
+		matchingCount++;
+		queryingManager.runPreProcessing(srq);
+		queryingManager.runMatching(srq);
+		queryingManager.runPostProcessing(srq);
+		queryingManager.runPostFilters(srq);
+
+
+		int resultSetSize;
+		try{
+			resultSetSize = srq.getResultSet().getExactResultSize();
+		} catch (NullPointerException ne) {
+			resultSetSize = 0;
+		}
+
+		logger.info(resultSetSize + " matching documents");
+	}
 	/**
-	 * Performs the matching using the specified weighting model 
+	 * Performs the matching using the specified weighting model
 	 * from the setup and possibly a combination of evidence mechanism.
 	 * It parses the file with the queries (the name of the file is defined
 	 * in the address_query file), creates the file of results, and for each
@@ -168,7 +200,7 @@ public class InteractiveQuerying {
 			if (verbose)
 				System.out.print("Please enter your query: ");
 			while ((query = consoleInput.readLine()) != null) {
-				if (query.length() == 0 || 
+				if (query.length() == 0 ||
 					query.toLowerCase().equals("quit") ||
 					query.toLowerCase().equals("exit")
 				)
@@ -192,7 +224,7 @@ public class InteractiveQuerying {
 		ResultSet set = q.getResultSet();
 		int[] docids = set.getDocids();
 		double[] scores = set.getScores();
-		int minimum = RESULTS_LENGTH;
+		int minimum = Integer.parseInt(ApplicationSetup.getProperty("interactive.output.format.length", "1000"));
 		//if the minimum number of documents is more than the
 		//number of documents in the results, aw.length, then
 		//set minimum = aw.length
@@ -205,7 +237,7 @@ public class InteractiveQuerying {
 				pw.write("\n\tNo results\n");
 		if (set.getResultSize() == 0)
 			return;
-		
+
 		int metaKeyId = 0; final int metaKeyCount = metaKeys.length;
 		String[][] docNames = new String[metaKeyCount][];
 		for(String metaIndexDocumentKey : metaKeys)
@@ -221,8 +253,8 @@ public class InteractiveQuerying {
 			}
 			metaKeyId++;
 		}
-		
-		
+
+
 		StringBuilder sbuffer = new StringBuilder();
 		//the results are ordered in asceding order
 		//with respect to the score. For example, the
@@ -251,31 +283,115 @@ public class InteractiveQuerying {
 		pw.flush();
 		//pw.write("finished outputting\n");
 	}
+
+
+	protected static class Counter{
+	 	private int count;
+
+		public Counter(int baseCount) {
+			this.count = baseCount;
+		}
+
+		public Counter() {
+			this.count = 0;
+		}
+
+		public int getCount() {
+			return this.count;
+		}
+
+		public void incrementCount(){
+			this.count++;
+		}
+	}
+
+
+	protected static String parseString(String[] args, Counter pos){
+		StringBuilder s = new StringBuilder();
+
+		while ((pos.getCount() < args.length) && !(args[pos.getCount()].startsWith("-"))){
+
+			s.append(args[pos.getCount()]);
+			s.append(" ");
+			pos.incrementCount();
+		}
+		return s.toString();
+	}
+
 	/**
 	 * Starts the interactive query application.
 	 * @param args the command line arguments.
 	 */
 	public static void main(String[] args) {
+
 		InteractiveQuerying iq = new InteractiveQuerying();
-		if (args.length == 0)
-		{
+
+		if (args.length == 0) {
 			iq.processQueries(1.0);
-		}
-		else if (args.length == 1 && args[0].equals("--noverbose"))
-		{
+		} else if (args.length == 1 && args[0].equals("--noverbose")) {
 			iq.verbose = false;
 			iq.processQueries(1.0);
-		}
-		else
-		{
-			iq.verbose = false;
-			StringBuilder s = new StringBuilder();
-			for(int i=0; i<args.length;i++)
-			{
-				s.append(args[i]);
-				s.append(" ");
+		} else {
+			Counter pos = new Counter(0);
+			boolean applicationSetupUpdated = false;
+			String query = "";
+			Double c = 1.0;
+
+			while (pos.getCount() < args.length) {
+				if (args[pos.getCount()].startsWith("-D")){
+					String[] propertyKV = args[pos.getCount()].replaceFirst("^-D", "").split("=");
+					if (propertyKV.length == 1) {
+						propertyKV = new String[]{propertyKV[0], ""};
+					}
+					ApplicationSetup.setProperty(propertyKV[0], propertyKV[1]);
+					applicationSetupUpdated = true;
+				} else if (args[pos.getCount()].equals("-r") || args[pos.getCount()].equals("--retrieve")){
+
+					pos.incrementCount();
+					query = parseString(args, pos).trim();
+
+					logger.info("query : " + query);
+
+					if (query == "") {
+						logger.error("No query after -r");
+					}
+
+					retrieving = true;
+				} else if (args[pos.getCount()].equals("-C") || args[pos.getCount()].equals("--count")){
+
+					pos.incrementCount();
+					query = parseString(args, pos).trim();
+
+					logger.info("query : " + query);
+
+					if (query == "") {
+						logger.error("No query after -c");
+					}
+
+					counting = true;
+				} else if (args[pos.getCount()].equals("--nonverbose")){
+					iq.verbose = false;
+					logger.setLevel(Level.ERROR);
+				} else if (args[pos.getCount()].startsWith("-c")) {
+				if (args[pos.getCount()].length()==2) { //the next argument is the value
+					if ((pos.getCount() + 1) < args.length) { //there is another argument
+						pos.incrementCount();
+						c = Double.parseDouble(args[pos.getCount()]);
+					} else
+						logger.error("c value can't be parsed");
+				} else { //the value is in the same argument
+					c = Double.parseDouble(args[pos.getCount()].substring(2));
+				}
 			}
-			iq.processQuery("CMDLINE", s.toString(), 1.0);
-		}	
+
+			pos.incrementCount();
+			}
+
+			if (retrieving){
+				iq.processQuery("CMDLINE", query, c);
+			} else if(counting){
+				iq.countQuery("CMDLINE", query, c);
+			}
+		}
 	}
 }
