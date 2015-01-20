@@ -180,7 +180,7 @@ public class InteractiveQuerying {
 			resultSetSize = 0;
 		}
 
-		logger.info(resultSetSize + " matching documents");
+		System.out.println("COUNT - " + resultSetSize + " matching documents");
 	}
 	/**
 	 * Performs the matching using the specified weighting model
