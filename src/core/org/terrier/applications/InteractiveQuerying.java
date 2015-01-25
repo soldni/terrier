@@ -172,7 +172,6 @@ public class InteractiveQuerying {
 		queryingManager.runPostProcessing(srq);
 		queryingManager.runPostFilters(srq);
 
-
 		int resultSetSize;
 		try{
 			resultSetSize = srq.getResultSet().getExactResultSize();
