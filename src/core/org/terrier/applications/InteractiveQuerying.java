@@ -34,6 +34,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import java.util.ArrayList;
+
 import org.apache.log4j.Logger;
 import org.apache.log4j.Level;
 
@@ -345,7 +349,7 @@ public class InteractiveQuerying {
 		} else {
 			Counter pos = new Counter(0);
 			boolean applicationSetupUpdated = false;
-			String query = "";
+			String raw_query = "";
 			Double c = 1.0;
 
 			while (pos.getCount() < args.length) {
@@ -359,11 +363,9 @@ public class InteractiveQuerying {
 				} else if (args[pos.getCount()].equals("-r") || args[pos.getCount()].equals("--retrieve")){
 
 					pos.incrementCount();
-					query = parseString(args, pos).trim();
+					raw_query = parseString(args, pos);
 
-					logger.info("query : " + query);
-
-					if (query == "") {
+					if (raw_query == "") {
 						logger.error("No query after -r");
 					}
 
@@ -371,11 +373,9 @@ public class InteractiveQuerying {
 				} else if (args[pos.getCount()].equals("-C") || args[pos.getCount()].equals("--count")){
 
 					pos.incrementCount();
-					query = parseString(args, pos).trim();
+					raw_query = parseString(args, pos);
 
-					logger.info("query : " + query);
-
-					if (query == "") {
+					if (raw_query == "") {
 						logger.error("No query after -c");
 					}
 
@@ -398,11 +398,22 @@ public class InteractiveQuerying {
 			pos.incrementCount();
 			}
 
-			if (retrieving){
-				iq.processQuery("CMDLINE", query, c);
-			} else if(counting){
-				iq.countQuery("CMDLINE", query, c);
+
+			ArrayList <String> queries = new ArrayList <String>();
+		 	Matcher m = Pattern.compile("[^,]+").matcher(raw_query);
+		 	while (m.find()) {
+				queries.add(m.group().trim());
+		 	}
+
+			for (String query : queries){
+				logger.info("query : " + query);
+				if (retrieving){
+					iq.processQuery("CMDLINE", query, c);
+				} else if(counting){
+					iq.countQuery("CMDLINE", query, c);
+				}
 			}
+
 		}
 	}
 }

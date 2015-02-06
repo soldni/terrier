@@ -2,7 +2,9 @@
 
 This version of terrier has been modified for personal use only. All rights belong to original owners.
 
-Compared with Terrier 4.0, it supports advanced options and counting through the interactive interface.
+Compared with Terrier 4.0, it supports advanced options and counting (option `-C`) through the interactive interface.
+
+To process multiple queries at once, simply separate them with a comma, e.g. `./bin/interactive_terrier.sh -r query1 query2`
 
 
 # Original README
