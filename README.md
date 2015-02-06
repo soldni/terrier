@@ -1,10 +1,11 @@
 # IMPORTANT
 
-This version of terrier has been modified for personal use only.
-Compared with Terrier 4.0, it supports document counting.
+This version of terrier has been modified for personal use only. All rights belong to original owners.
+
+Compared with Terrier 4.0, it supports advanced options and counting through the interactive interface.
 
 
-# Original Readme
+# Original README
 
     Terrier - Terabyte Retriever version 4.0
     Webpage: http://terrier.org
@@ -36,5 +37,3 @@ Compared with Terrier 4.0, it supports document counting.
     doc/index.html. The documentation of Terrier can also be found on the
     website http://terrier.org/. You can participate on
     the Terrier Forum at http://terrier.org/forum/.
-
-
