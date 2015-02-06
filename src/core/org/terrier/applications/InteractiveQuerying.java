@@ -25,6 +25,8 @@
  *   Vassilis Plachouras <vassilis{a.}dcs.gla.ac.uk>
  *   Ben He <ben{a.}dcs.gla.ac.uk>
  *   Craig Macdonald <craigm{a.}dcs.gla.ac.uk>
+ *
+ * 	 Luca Soldaini <luca{a.}ir.cs.georgetown.edu (branch)
  */
 package org.terrier.applications;
 import java.io.BufferedReader;
@@ -144,39 +146,49 @@ public class InteractiveQuerying {
 		srq.setControl("c", Double.toString(cParameter));
 		srq.addMatchingModel(mModel, wModel);
 		matchingCount++;
-		queryingManager.runPreProcessing(srq);
-		queryingManager.runMatching(srq);
-		queryingManager.runPostProcessing(srq);
-		queryingManager.runPostFilters(srq);
-		try{
-			printResults(resultFile, srq);
-		} catch (IOException ioe) {
-			logger.error("Problem displaying results", ioe);
-		}
+		try {
+			queryingManager.runPreProcessing(srq);
+			queryingManager.runMatching(srq);
+			queryingManager.runPostProcessing(srq);
+			queryingManager.runPostFilters(srq);
+			try{
+				printResults(resultFile, srq);
+			} catch (IOException ioe) {
+				logger.error("Problem displaying results", ioe);
+			}
+		} catch (NullPointerException ne) {}
 	}
 
 	public void countQuery(String queryId, String query, double cParameter) {
 		SearchRequest srq = queryingManager.newSearchRequest(queryId, query);
-
 		Index.setIndexLoadingProfileAsRetrieval(false);
 		Index i = Index.createIndex();
 		String numdoc = String.valueOf(i.getCollectionStatistics().getNumberOfDocuments());
 		ApplicationSetup.setProperty("matching.retrieved_set_size", numdoc);
 		Index.setIndexLoadingProfileAsRetrieval(true);
 
+		int resultSetSize = 0;
+
 		srq.setControl("c", Double.toString(cParameter));
 		srq.addMatchingModel(mModel, wModel);
 		matchingCount++;
-		queryingManager.runPreProcessing(srq);
-		queryingManager.runMatching(srq);
-		queryingManager.runPostProcessing(srq);
-		queryingManager.runPostFilters(srq);
 
-		int resultSetSize;
-		try{
-			resultSetSize = srq.getResultSet().getExactResultSize();
-		} catch (NullPointerException ne) {
+		boolean noPostingList = false;
+		try {
+			queryingManager.runPreProcessing(srq);
+			queryingManager.runMatching(srq);
+			queryingManager.runPostProcessing(srq);
+			queryingManager.runPostFilters(srq);
+		} catch (NullPointerException ne){
+			noPostingList = true;
 			resultSetSize = 0;
+		}
+		if (! noPostingList) {
+			try{
+				resultSetSize = srq.getResultSet().getExactResultSize();
+			} catch (NullPointerException ne) {
+				resultSetSize = 0;
+			}
 		}
 
 		System.out.println("COUNT - " + resultSetSize + " matching documents");
