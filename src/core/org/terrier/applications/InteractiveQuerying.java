@@ -150,17 +150,17 @@ public class InteractiveQuerying {
 		srq.setControl("c", Double.toString(cParameter));
 		srq.addMatchingModel(mModel, wModel);
 		matchingCount++;
-		try {
-			queryingManager.runPreProcessing(srq);
-			queryingManager.runMatching(srq);
-			queryingManager.runPostProcessing(srq);
-			queryingManager.runPostFilters(srq);
-			try{
-				printResults(resultFile, srq);
-			} catch (IOException ioe) {
-				logger.error("Problem displaying results", ioe);
-			}
-		} catch (NullPointerException ne) {}
+
+		queryingManager.runPreProcessing(srq);
+		queryingManager.runMatching(srq);
+		queryingManager.runPostProcessing(srq);
+		queryingManager.runPostFilters(srq);
+		try{
+			printResults(resultFile, srq);
+		} catch (IOException ioe) {
+			logger.error("Problem displaying results", ioe);
+		}
+
 	}
 
 	public void countQuery(String queryId, String query, double cParameter) {
@@ -195,7 +195,7 @@ public class InteractiveQuerying {
 			}
 		}
 
-		System.out.println("COUNT - " + resultSetSize + " matching documents");
+		System.out.println("\nOUTPUT - " + resultSetSize + " matching documents\n");
 	}
 	/**
 	 * Performs the matching using the specified weighting model
@@ -243,15 +243,16 @@ public class InteractiveQuerying {
 		//if the minimum number of documents is more than the
 		//number of documents in the results, aw.length, then
 		//set minimum = aw.length
-		if (minimum > set.getResultSize())
+		if (minimum > set.getResultSize()){
 			minimum = set.getResultSize();
-		if (verbose)
-			if(set.getResultSize()>0)
-				pw.write("\n\tDisplaying 1-"+set.getResultSize()+ " results\n");
-			else
-				pw.write("\n\tNo results\n");
-		if (set.getResultSize() == 0)
-			return;
+		}
+
+		if(set.getResultSize() > 0){
+			pw.write("\nOUTPUT - Displaying 1-" + set.getResultSize() + " results\n");
+		}
+		else{
+			pw.write("\nOUTPUT - No results\n");
+		}
 
 		int metaKeyId = 0; final int metaKeyCount = metaKeys.length;
 		String[][] docNames = new String[metaKeyCount][];
@@ -293,10 +294,9 @@ public class InteractiveQuerying {
 			sbuffer.append(scores[i]);
 			sbuffer.append('\n');
 		}
-		//System.out.println(sbuffer.toString());
 		pw.write(sbuffer.toString());
+		pw.write('\n');
 		pw.flush();
-		//pw.write("finished outputting\n");
 	}
 
 
